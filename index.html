@@ -17,14 +17,16 @@
   <title>Blair</title>
   <style>
     :root {
-      --bg: linear-gradient(to top, #bddffc 0%, #408ce9 100%);
+      --bg-color: #bddffc;
+      --bg-image: linear-gradient(to top, #bddffc 0%, #408ce9 100%);
       --particle: 255, 255, 255;
       --dot: 2.4;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: linear-gradient(to top, #292929 0%, #090909 100%);
+        --bg-color: #292929;
+        --bg-image: linear-gradient(to top, #292929 0%, #090909 100%);
       }
     }
 
@@ -33,7 +35,8 @@
       margin: 0;
       width: 100%;
       height: 100%;
-      background: var(--bg);
+      background-color: var(--bg-color);
+      background-image: var(--bg-image);
       overflow: hidden;
       overscroll-behavior: none;
       -webkit-text-size-adjust: 100%;
@@ -62,13 +65,8 @@
       width: 100vw;
       height: 100vh;
       height: 100lvh;
+      height: calc(100lvh + env(safe-area-inset-bottom, 0px) + 320px);
       z-index: 0;
-    }
-
-    @media (pointer: coarse) {
-      #sky {
-        height: calc(100lvh + env(safe-area-inset-bottom, 0px) + 96px);
-      }
     }
 
     #c {
@@ -192,30 +190,10 @@
       var darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
 
       var PIXEL = 3;
-      function getSkySize() {
-        var vv = window.visualViewport;
-        var isTouch = window.matchMedia("(pointer: coarse)").matches;
-        var bleed = isTouch ? 96 : 0;
-        return {
-          w: Math.max(
-            window.innerWidth || 0,
-            document.documentElement.clientWidth || 0,
-            vv ? Math.ceil(vv.width + vv.offsetLeft) : 0
-          ),
-          h: Math.max(
-            window.innerHeight || 0,
-            document.documentElement.clientHeight || 0,
-            vv ? Math.ceil(vv.height + vv.offsetTop + bleed) : 0
-          ),
-        };
-      }
-
       function resizeSky() {
-        var size = getSkySize();
-        var w = Math.max(1, Math.ceil(size.w / PIXEL));
-        var h = Math.max(1, Math.ceil(size.h / PIXEL));
-        sky.style.width = size.w + "px";
-        sky.style.height = size.h + "px";
+        var rect = sky.getBoundingClientRect();
+        var w = Math.max(1, Math.ceil(rect.width / PIXEL));
+        var h = Math.max(1, Math.ceil(rect.height / PIXEL));
         sky.width = w;
         sky.height = h;
         gl.viewport(0, 0, w, h);
