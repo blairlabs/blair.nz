@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <meta name="description" content="Blair Labs - we build software.">
   <meta property="og:type" content="website">
@@ -12,41 +12,63 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Blair">
   <meta name="twitter:description" content="Blair Labs - we build software.">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#2f80ed">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d0d0d">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#bddffc">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#292929">
   <title>Blair</title>
   <style>
     :root {
-      --bg: #fff;
+      --bg: linear-gradient(to top, #bddffc 0%, #408ce9 100%);
       --particle: 255, 255, 255;
       --dot: 2.4;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0d0d0d;
+        --bg: linear-gradient(to top, #292929 0%, #090909 100%);
       }
     }
 
     html,
     body {
       margin: 0;
+      width: 100%;
       height: 100%;
       background: var(--bg);
       overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
     }
 
     canvas {
       display: block;
       image-rendering: pixelated;
+      pointer-events: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     #sky {
       position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100lvh;
       z-index: 0;
+    }
+
+    @media (pointer: coarse) {
+      #sky {
+        height: calc(100lvh + env(safe-area-inset-bottom, 0px) + 96px);
+      }
     }
 
     #c {
@@ -170,9 +192,30 @@
       var darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
 
       var PIXEL = 3;
+      function getSkySize() {
+        var vv = window.visualViewport;
+        var isTouch = window.matchMedia("(pointer: coarse)").matches;
+        var bleed = isTouch ? 96 : 0;
+        return {
+          w: Math.max(
+            window.innerWidth || 0,
+            document.documentElement.clientWidth || 0,
+            vv ? Math.ceil(vv.width + vv.offsetLeft) : 0
+          ),
+          h: Math.max(
+            window.innerHeight || 0,
+            document.documentElement.clientHeight || 0,
+            vv ? Math.ceil(vv.height + vv.offsetTop + bleed) : 0
+          ),
+        };
+      }
+
       function resizeSky() {
-        var w = Math.max(1, Math.ceil(window.innerWidth / PIXEL));
-        var h = Math.max(1, Math.ceil(window.innerHeight / PIXEL));
+        var size = getSkySize();
+        var w = Math.max(1, Math.ceil(size.w / PIXEL));
+        var h = Math.max(1, Math.ceil(size.h / PIXEL));
+        sky.style.width = size.w + "px";
+        sky.style.height = size.h + "px";
         sky.width = w;
         sky.height = h;
         gl.viewport(0, 0, w, h);
@@ -180,6 +223,10 @@
       }
 
       window.addEventListener("resize", resizeSky);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", resizeSky);
+        window.visualViewport.addEventListener("scroll", resizeSky);
+      }
       resizeSky();
 
       var start = performance.now();
